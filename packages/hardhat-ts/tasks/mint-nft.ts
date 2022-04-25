@@ -1,7 +1,7 @@
-import { YourNFT__factory } from 'generated/contract-types/factories/YourNFT__factory';
-import { YourNFT } from 'generated/contract-types/YourNFT';
+import { YourCollectible__factory } from 'generated/contract-types/factories/YourCollectible__factory';
+import { YourCollectible } from 'generated/contract-types/YourCollectible';
 import { task } from 'hardhat/config';
-import { create } from 'ipfs-http-client';
+import { globSource, create } from 'ipfs-http-client';
 import { getHardhatSigners } from 'tasks/functions/accounts';
 import { sleep } from 'tasks/functions/utils';
 
@@ -20,11 +20,11 @@ task('mint', 'Mints NFTs to the specified address')
     console.log('\n\n 🎫 Minting to ' + toAddress + '...\n');
 
     const { deployer } = await getHardhatSigners(hre);
-    let yourNFTContract: YourNFT | undefined = undefined;
+    let yourNFTContract: YourCollectible | undefined = undefined;
 
     if (contractAddress != null) {
       try {
-        yourNFTContract = YourNFT__factory.connect(contractAddress, deployer);
+        yourNFTContract = YourCollectible__factory.connect(contractAddress, deployer);
       } catch (e) {
         console.log('Invalid contractAddress, creating new YourNFT contract');
         return;
@@ -32,7 +32,7 @@ task('mint', 'Mints NFTs to the specified address')
     }
 
     if (yourNFTContract == null) {
-      const factory = new YourNFT__factory(deployer);
+      const factory = new YourCollectible__factory(deployer);
       yourNFTContract = await factory.deploy();
       console.log('\n\n 🎫 YourNFT contract deployed at ' + yourNFTContract.address + '\n');
     }
@@ -43,123 +43,13 @@ task('mint', 'Mints NFTs to the specified address')
     }
     const delay = 1000;
 
-    const buffalo = {
-      description: "It's actually a bison?",
-      external_url: 'https://austingriffith.com/portfolio/paintings/', // <-- this can link to a page for the specific file too
-      image: 'https://austingriffith.com/images/paintings/buffalo.jpg',
-      name: 'Buffalo',
-      attributes: [
-        {
-          trait_type: 'BackgroundColor',
-          value: 'green',
-        },
-        {
-          trait_type: 'Eyes',
-          value: 'googly',
-        },
-        {
-          trait_type: 'Stamina',
-          value: 42,
-        },
-      ],
-    };
-    console.log('Uploading buffalo...');
-    const uploaded = await ipfs.add(JSON.stringify(buffalo));
-
-    console.log('Minting buffalo with IPFS hash (' + uploaded.path + ')');
-    await yourNFTContract.mintItem(toAddress, uploaded.path, {
-      gasLimit: 400000,
-    });
-
+    const tokenUris = [];
+    const stream = globSource('./erc1155metadata', '**/*');
+    for await (const file of ipfs.addAll(stream)) {
+      const tokenUri = 'https://ipfs.io/ipfs/' + file.cid.toString();
+      tokenUris.push(tokenUri);
+    }
     await sleep(delay);
-
-    const zebra = {
-      description: 'What is it so worried about?',
-      external_url: 'https://austingriffith.com/portfolio/paintings/', // <-- this can link to a page for the specific file too
-      image: 'https://austingriffith.com/images/paintings/zebra.jpg',
-      name: 'Zebra',
-      attributes: [
-        {
-          trait_type: 'BackgroundColor',
-          value: 'blue',
-        },
-        {
-          trait_type: 'Eyes',
-          value: 'googly',
-        },
-        {
-          trait_type: 'Stamina',
-          value: 38,
-        },
-      ],
-    };
-    console.log('Uploading zebra...');
-    const uploadedzebra = await ipfs.add(JSON.stringify(zebra));
-
-    console.log('Minting zebra with IPFS hash (' + uploadedzebra.path + ')');
-    await yourNFTContract.mintItem(toAddress, uploadedzebra.path, {
-      gasLimit: 400000,
-    });
-
-    await sleep(delay);
-
-    const rhino = {
-      description: 'What a horn!',
-      external_url: 'https://austingriffith.com/portfolio/paintings/', // <-- this can link to a page for the specific file too
-      image: 'https://austingriffith.com/images/paintings/rhino.jpg',
-      name: 'Rhino',
-      attributes: [
-        {
-          trait_type: 'BackgroundColor',
-          value: 'pink',
-        },
-        {
-          trait_type: 'Eyes',
-          value: 'googly',
-        },
-        {
-          trait_type: 'Stamina',
-          value: 22,
-        },
-      ],
-    };
-    console.log('Uploading rhino...');
-    const uploadedrhino = await ipfs.add(JSON.stringify(rhino));
-
-    console.log('Minting rhino with IPFS hash (' + uploadedrhino.path + ')');
-    await yourNFTContract.mintItem(toAddress, uploadedrhino.path, {
-      gasLimit: 400000,
-    });
-
-    await sleep(delay);
-
-    const fish = {
-      description: 'Is that an underbyte?',
-      external_url: 'https://austingriffith.com/portfolio/paintings/', // <-- this can link to a page for the specific file too
-      image: 'https://austingriffith.com/images/paintings/fish.jpg',
-      name: 'Fish',
-      attributes: [
-        {
-          trait_type: 'BackgroundColor',
-          value: 'blue',
-        },
-        {
-          trait_type: 'Eyes',
-          value: 'googly',
-        },
-        {
-          trait_type: 'Stamina',
-          value: 15,
-        },
-      ],
-    };
-    console.log('Uploading fish...');
-    const uploadedfish = await ipfs.add(JSON.stringify(fish));
-
-    console.log('Minting fish with IPFS hash (' + uploadedfish.path + ')');
-    await yourNFTContract.mintItem(toAddress, uploadedfish.path, {
-      gasLimit: 400000,
-    });
 
     await sleep(delay);
 
