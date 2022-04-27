@@ -20,7 +20,7 @@ task('mint', 'Mints NFTs to the specified address')
     console.log('\n\n 🎫 Minting to ' + toAddress + '...\n');
 
     const { deployer } = await getHardhatSigners(hre);
-    let yourNFTContract: YourCollectible | undefined = undefined;
+    let yourNFTContract: YourCollectible | undefined;
 
     if (contractAddress != null) {
       try {
@@ -31,7 +31,8 @@ task('mint', 'Mints NFTs to the specified address')
       }
     }
 
-    if (yourNFTContract == null) {
+    console.log('yourNFTContract == undefined', yourNFTContract === undefined);
+    if (yourNFTContract == undefined) {
       const factory = new YourCollectible__factory(deployer);
       yourNFTContract = await factory.deploy();
       console.log('\n\n 🎫 YourNFT contract deployed at ' + yourNFTContract.address + '\n');
@@ -51,8 +52,25 @@ task('mint', 'Mints NFTs to the specified address')
     }
     await sleep(delay);
 
-    await sleep(delay);
+    await yourNFTContract.mint(toAddress, 0, 4, [], { gasLimit: 400000 });
 
+    await yourNFTContract.mint(toAddress, 1, 10, [], { gasLimit: 400000 });
+
+    await yourNFTContract.mint(toAddress, 2, 2, [], { gasLimit: 400000 });
+
+    await yourNFTContract.mint(toAddress, 3, 5, [], { gasLimit: 400000 });
+
+    await yourNFTContract.mint(toAddress, 4, 6, [], { gasLimit: 400000 });
+
+    await yourNFTContract.mint(toAddress, 5, 1, [], { gasLimit: 400000 });
+
+    await yourNFTContract.setTokenUri(0, tokenUris[0], { gasLimit: 400000 });
+    await yourNFTContract.setTokenUri(1, tokenUris[1], { gasLimit: 400000 });
+    await yourNFTContract.setTokenUri(2, tokenUris[2], { gasLimit: 400000 });
+    await yourNFTContract.setTokenUri(3, tokenUris[3], { gasLimit: 400000 });
+    await yourNFTContract.setTokenUri(4, tokenUris[4], { gasLimit: 400000 });
+    await yourNFTContract.setTokenUri(5, tokenUris[5], { gasLimit: 400000 });
+    await sleep(delay);
     console.log('Transferring Ownership of YourCollectible to ' + toAddress + '...');
 
     await yourNFTContract.transferOwnership(toAddress, { gasLimit: 400000 });

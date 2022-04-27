@@ -15,6 +15,11 @@ import { useAppContracts, useConnectAppContracts, useLoadAppContracts } from '~~
 import { useBurnerFallback } from '~~/components/main/hooks/useBurnerFallback';
 import { useScaffoldProviders as useScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 import { BURNER_FALLBACK_ENABLED, MAINNET_PROVIDER } from '~~/config/app.config';
+import { Button, Card, List } from 'antd';
+import { AddressInput } from 'eth-components/ant';
+import YourCollectibles from './components/pages/yourCollectibles/YourCollectibles';
+import TransferUI from './components/pages/transfer/TransferUI';
+import IPFSUploadUI from './components/pages/ipfsUpload/ipfsUploadUI';
 
 /**
  * ⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️
@@ -32,6 +37,7 @@ import { BURNER_FALLBACK_ENABLED, MAINNET_PROVIDER } from '~~/config/app.config'
  * @returns
  */
 export const MainPage: FC = () => {
+  const [yourCollectibles, setYourCollectibles] = useState<any>([]);
   // -----------------------------
   // Providers, signers & wallets
   // -----------------------------
@@ -69,19 +75,19 @@ export const MainPage: FC = () => {
   // -----------------------------
 
   // init contracts
-  const yourContract = useAppContracts('YourContract', ethersContext.chainId);
+  const yourContract = useAppContracts('YourCollectible', ethersContext.chainId);
   const mainnetDai = useAppContracts('DAI', NETWORKS.mainnet.chainId);
 
   // keep track of a variable from the contract in the local React state:
-  const [purpose, update] = useContractReader(
-    yourContract,
-    yourContract?.purpose,
-    [],
-    yourContract?.filters.SetPurpose()
-  );
+  // const [purpose, update] = useContractReader(
+  //   yourContract,
+  //   yourContract?.purpose,
+  //   [],
+  //   yourContract?.filters.SetPurpose()
+  // );
 
-  // 📟 Listen for broadcast events
-  const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
+  // // 📟 Listen for broadcast events
+  // const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
 
   // -----------------------------
   // .... 🎇 End of examples
@@ -103,23 +109,28 @@ export const MainPage: FC = () => {
   // This is the list of pages and tabs
   const pageList: TContractPageList = {
     mainPage: {
-      name: 'YourContract',
-      element: (
-        <GenericContract
-          contractName="YourContract"
-          contract={yourContract}
-          mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
-          blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
-        />
-      ),
+      name: 'YourCollectibles',
+      element: <YourCollectibles scaffoldAppProviders={scaffoldAppProviders} />,
     },
     pages: [
       {
-        name: 'Dai',
+        name: 'Transfers',
+        element: <TransferUI scaffoldAppProviders={scaffoldAppProviders} />,
+      },
+      {
+        name: 'IpfsUpload',
+        element: <IPFSUploadUI scaffoldAppProviders={scaffoldAppProviders} />,
+      },
+      {
+        name: 'IpfsDownload',
+        element: <IPFSUploadUI scaffoldAppProviders={scaffoldAppProviders} />,
+      },
+      {
+        name: 'Debug',
         element: (
           <GenericContract
-            contractName="Dai"
-            contract={mainnetDai}
+            contractName="YourCollectible"
+            contract={yourContract}
             mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
             blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
           />

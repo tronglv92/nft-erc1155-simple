@@ -20,7 +20,9 @@ envConfig({ path: '../vite-app-ts/.env' });
 /**
  * this loads all the tasks from the tasks folder
  */
+
 if (process.env.BUILDING !== 'true') {
+  console.log('vao trong nay: ');
   glob.sync('./tasks/**/*.ts').forEach((file: string) => {
     require(path.resolve(file));
   });

@@ -3,6 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 contract YourCollectible is ERC1155, Ownable {
   using Counters for Counters.Counter;
@@ -20,10 +21,11 @@ contract YourCollectible is ERC1155, Ownable {
     bytes memory _data
   ) public onlyOwner {
     if (tokenSupply[_id] == 0) {
-      _tokenIds.increment();
       uint256 tokenIds = _tokenIds.current();
-
+      console.log("tokenIds: ", tokenIds);
+      console.log("_id: ", _id);
       require(_id == tokenIds, "Wrong id provided");
+      _tokenIds.increment();
     }
     _mint(_to, _id, _quantity, _data);
     tokenSupply[_id] += _quantity;
@@ -42,7 +44,7 @@ contract YourCollectible is ERC1155, Ownable {
     return _tokenIds.current() + 1;
   }
 
-  function _getCurrentTokenID() private view returns (uint256) {
+  function getCurrentTokenID() public view returns (uint256) {
     return _tokenIds.current();
   }
 }
